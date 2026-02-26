@@ -135,7 +135,7 @@ def fetch_data_from_db():
             sql = """
                 SELECT
                     id, title, description, image_url,
-                    DATE_FORMAT(`date`, '%a, %d %b %Y 00:00:00 GMT') AS `date`
+                    DATE_FORMAT(`date`, '%a, %d %b %Y 00:00:00 GMT') AS `date`,
                     location
                 FROM events
                 ORDER BY date ASC, id ASC
