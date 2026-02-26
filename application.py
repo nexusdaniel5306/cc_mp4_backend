@@ -140,8 +140,6 @@ def fetch_data_from_db():
                 FROM events
                 ORDER BY date ASC, id ASC
             """
-            "date": row['date'].strftime('%a, %d %b %Y 00:00:00 GMT') if row.get("date") else None,
-
             cursor.execute(sql)
             rows = cursor.fetchall()
         return rows
