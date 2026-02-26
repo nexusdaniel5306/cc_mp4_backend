@@ -32,27 +32,20 @@ def list_events():
 #Endpoint: Data Insertion
 @application.route('/events', methods=['POST'])
 def create_event():
-    """
-    This endpoint should eventually insert data into the database.
-    The database communication is currently stubbed out.
-    You must implement insert_data_into_db() function to integrate with your MySQL RDS Instance.
-    """
     try:
-        payload = request.get_json()
-        required_fields = ["title", "date"]
-        if not payload or not all(field in payload for field in required_fields):
+        payload = request.get_json(force=True, silent=True) or {}
+
+        title = payload.get("title")
+        date = payload.get("date")
+        if not title or not date:
             return jsonify({"error": "Missing required fields: 'title' and 'date'"}), 400
 
         insert_data_into_db(payload)
         return jsonify({"message": "Event created successfully"}), 201
-    except NotImplementedError as nie:
-        return jsonify({"error": str(nie)}), 501
+
     except Exception as e:
         logging.exception("Error occurred during event creation")
-        return jsonify({
-            "error": "During event creation",
-            "detail": str(e)
-        }), 500
+        return jsonify({"error": "During event creation", "detail": str(e)}), 500
 
 #Endpoint: Data Retrieval
 @application.route('/data', methods=['GET'])
