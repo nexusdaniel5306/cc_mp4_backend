@@ -57,22 +57,12 @@ def create_event():
 #Endpoint: Data Retrieval
 @application.route('/data', methods=['GET'])
 def get_data():
-    """
-    This endpoint should eventually provide data from the database.
-    The database communication is currently stubbed out.
-    You must implement the fetch_data_from_db() function to integrate with your MySQL RDS Instance.
-    """
     try:
         data = fetch_data_from_db()
         return jsonify({"data": data}), 200
-    except NotImplementedError as nie:
-        return jsonify({"error": str(nie)}), 501
     except Exception as e:
         logging.exception("Error occurred during data retrieval")
-        return jsonify({
-            "error": "During data retrieval",
-            "detail": str(e)
-        }), 500
+        return jsonify({"error": "During data retrieval", "detail": str(e)}), 500
 
 def get_db_connection():
     """
