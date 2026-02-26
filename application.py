@@ -17,6 +17,18 @@ def health():
     """
     return jsonify({"status": "healthy"}), 200
 
+#endpoint events get for testing
+@application.route('/events', methods=['GET'])
+def list_events():
+    try:
+        data = fetch_data_from_db()
+        return jsonify(data), 200   # returns a JSON array: [...]
+    except NotImplementedError as nie:
+        return jsonify({"error": str(nie)}), 501
+    except Exception as e:
+        logging.exception("Error occurred during events retrieval")
+        return jsonify({"error": "During events retrieval", "detail": str(e)}), 500
+
 #Endpoint: Data Insertion
 @application.route('/events', methods=['POST'])
 def create_event():
@@ -111,25 +123,45 @@ def create_db_table():
         raise RuntimeError(f"Table creation failed: {str(e)}")
 
 def insert_data_into_db(payload):
-    """
-    Stub for database communication.
-    Implement this function to insert the data into the database.
-    NOTE: Our autograder will automatically insert data into the DB automatically keeping in mind the explained SCHEMA, you dont have to insert your own data.
-    """
     create_db_table()
-    # TODO: Implement the database call    
-    
-    raise NotImplementedError("Database insert function not implemented.")
 
-#Database Function Stub
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                INSERT INTO events (title, description, image_url, date, location)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (
+                payload.get("title"),
+                payload.get("description"),
+                payload.get("image_url"),
+                payload.get("date"),
+                payload.get("location"),
+            ))
+        connection.commit()
+    finally:
+        connection.close()
+
 def fetch_data_from_db():
-    """
-    Stub for database communication.
-    Implement this function to fetch your data from the database.
-    """
-    # TODO: Implement the database call
-    
-    raise NotImplementedError("Database fetch function not implemented.")
+    create_db_table()
+
+    connection = get_db_connection()
+    try:
+        with connection.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = """
+                SELECT
+                    id, title, description, image_url,
+                    DATE_FORMAT(date, '%%Y-%%m-%%d') AS date,
+                    location
+                FROM events
+                ORDER BY date ASC, id ASC
+            """
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+        return rows
+    finally:
+        connection.close()
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
